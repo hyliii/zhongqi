@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>邮箱验证</title>
+    <style>
+        .t2{
+            display: inline-block;
+        }
+             .t1{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<form action="{% url 'user:email_check' %}" id="register_form" method="get">
+<table>
+    <tr>邮箱：{{ email }}</tr>
+    <tr>
+									<!-- 图形验证码 -->
+        <td class="t j-vcode">验证码</td>
+        <td class="j-vcode">
+            <input class="text pin" id="txt_vcode" name="txt_vcode" autocomplete="off" placeholder="请输入验证码" maxlength="4" tabindex="5" type="text" onblur="co()">
+            <a class="code_pic" id="vcodeImgWrap" name="change_code_img" href="javascript:void(0);">
+                <img id="imgVcode" title="点击更换验证码" alt="点击更换验证码" src="{% url 'user:getcaptcha2' %}" width="84" height="37">
+            </a>
+            <a id="vcodeImgBtn" name="change_code_link" class="code_picww" href="javascript:void(0);" onclick="change()">换张图</a>
+        <span id="spn_username_ok" class="" style="display: inline-block">
+                <span id="span4" class="t1"><img src="{% static 'images/5-121204193934-50.gif' %}"  width="20px" /><span>正在验证~~~</span></span>
+                <span id="span7" class="t1"><img src="{% static 'images/right.jpg' %}"  width="20px" /></span>
+                <span id="span8" class="t1"><img src="{% static 'images/error_3.jpg' %}"  width="20px" /></span>
+            </span>
+        </td>
+    </tr>
+    <tr><input type="button" onclick="su()" style="width: 150px;height: 50px;background-color: #fff9bc;color: #6eae4c" value="提交"></tr>
+</table>
+    </form>
+<script src="{% static 'js/jquery1.4.2.js' %}"></script>
+<script>
+    function su() {
+                form1 = document.getElementById('register_form');
+                code=document.getElementById('txt_vcode').value;
+                    $.ajax({
+                        type:'get',
+                        url:'{% url "user:coajax" %}',
+                        data:'code='+code,
+                        success:function (msg) {
+                            if(msg=='1'){
+                                form1.submit();
+                                alert('提交成功！')
+                            }else{
+                                alert('验证码错误请重新提交！')
+                            }
+                        }
+
+                    })
+            }
+    function co() {
+        var code1=document.getElementById('txt_vcode').value;
+        var url="{% url  'user:youxiangajax'%}";
+        var xhr;
+        if (window.ActiveXObject )
+        {
+            xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        }else if(window.XMLHttpRequest)
+        {
+            xhr = new XMLHttpRequest();
+        }
+        xhr.open('POST',url,true);
+        xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        xhr.setRequestHeader("X-CSRFToken", '{{ csrf_token }}');
+        xhr.send('code='+code1);
+        span4=document.getElementById('span4');
+        span4.classList.remove('t1');
+        span4.classList.add('t2');
+        xhr.onreadystatechange=function () {
+            if(xhr.readyState==4&&xhr.status==200){
+                var res1=xhr.responseText;
+                span4=document.getElementById('span4');
+                span7=document.getElementById('span7');
+                span8=document.getElementById('span8');
+                span4.classList.remove('t2');
+                span4.classList.add('t1');
+            if(res1==0){
+                span8.classList.remove('t1');
+                span8.classList.add('t2');
+                return 0
+            }else{
+                span7.classList.remove('t1');
+                span7.classList.add('t2');
+                return 1
+            }
+            }
+        };
+        span7.classList.remove('t2');
+        span8.classList.remove('t2');
+        span7.classList.add('t1');
+        span8.classList.add('t1');
+    }
+    function change() {
+                var url="{% url 'user:getcaptcha2' %}?"+ new Date().getTime();
+                var img=document.getElementById('imgVcode');
+                img.src=url;
+            }
+
+</script>
+</body>
+</html>
